@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Dictionary Book</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            background: linear-gradient(135deg, #2c1810 0%, #4a2c1a 100%);
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 2000px;
+        }
+
+        .book-container {
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.8s ease;
+        }
+
+        .book-container.open {
+            transform: rotateY(0deg);
+        }
+
+        .book {
+            width: 600px;
+            height: 400px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 1s ease;
+            cursor: pointer;
+        }
+
+        .book-cover {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #8b4513 0%, #a0522d 100%);
+            border: 3px solid #654321;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            backface-visibility: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            transform-origin: left center;
+            transition: transform 1s ease;
+        }
+
+        .book-cover.open {
+            transform: rotateY(-180deg);
+        }
+
+        .book-title {
+            font-size: 2.5em;
+            color: #ffd700;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .book-subtitle {
+            font-size: 1.2em;
+            color: #f4e4c1;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .open-instruction {
+            color: #f4e4c1;
+            font-size: 1em;
+            text-align: center;
+            opacity: 0.8;
+        }
+
+        .book-pages {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: #fffaf0;
+            border: 2px solid #8b7355;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            transform: rotateY(0deg);
+            backface-visibility: hidden;
+            overflow-y: auto;
+            opacity: 0;
+            transition: opacity 0.5s ease 0.5s;
+        }
+
+        .book-pages.visible {
+            opacity: 1;
+        }
+
+        .book-pages::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #8b7355, #d4af37, #8b7355);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #d4af37;
+        }
+
+        .word-title {
+            font-size: 2.5em;
+            color: #4a4a4a;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .pronunciation-section {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 5px;
+        }
+
+        .pronunciation {
+            font-size: 1.2em;
+            color: #666;
+            font-style: italic;
+        }
+
+        .audio-button {
+            background: #d4af37;
+            border: none;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .audio-button:hover {
+            background: #b8941f;
+            transform: scale(1.1);
+        }
+
+        .audio-button:active {
+            transform: scale(0.95);
+        }
+
+        .audio-icon {
+            width: 20px;
+            height: 20px;
+            fill: white;
+        }
+
+        .part-of-speech {
+            font-size: 1.1em;
+            color: #8b7355;
+            font-weight: bold;
+        }
+
+        .definition-section {
+            margin: 30px 0;
+        }
+
+        .definition-number {
+            font-weight: bold;
+            color: #8b7355;
+            margin-right: 10px;
+        }
+
+        .definition-text {
+            font-size: 1.1em;
+            color: #333;
+            line-height: 1.8;
+            text-align: justify;
+        }
+
+        .clickable-word {
+            color: #0066cc;
+            text-decoration: underline;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .clickable-word:hover {
+            color: #004499;
+            text-decoration: none;
+            background: rgba(0, 102, 204, 0.1);
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+
+        .definition-popup {
+            display: none;
+            position: fixed;
+            background: #fff;
+            border: 2px solid #8b7355;
+            border-radius: 6px;
+            padding: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            max-width: 300px;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+
+        .definition-popup::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 8px solid #8b7355;
+        }
+
+        .popup-title {
+            font-weight: bold;
+            color: #8b7355;
+            margin-bottom: 5px;
+            font-size: 1.1em;
+        }
+
+        .popup-definition {
+            color: #333;
+        }
+
+        .close-popup {
+            position: absolute;
+            top: 5px;
+            right: 8px;
+            cursor: pointer;
+            font-size: 1.2em;
+            color: #999;
+            font-weight: bold;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .close-popup:hover {
+            color: #666;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #d4af37;
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .instructions {
+            background: rgba(212, 175, 55, 0.1);
+            border-left: 4px solid #d4af37;
+            padding: 15px;
+            margin: 20px 0;
+            font-size: 0.95em;
+            color: #666;
+        }
+
+        .close-book {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #8b4513;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 15px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .close-book:hover {
+            background: #654321;
+        }
+    </style>
+</head>
+<body>
+    <div class="book-container" id="bookContainer">
+        <div class="book" id="book">
+            <div class="book-cover" id="bookCover">
+                <div class="book-title">Dictionary</div>
+                <div class="book-subtitle">Interactive Word Book</div>
+                <div class="open-instruction">Click to open the book</div>
+            </div>
+            <div class="book-pages" id="bookPages">
+                <button class="close-book" id="closeBook">Close Book</button>
+                <div class="header">
+                    <div class="word-title">Chauvinist</div>
+                    <div class="pronunciation-section">
+                        <div class="pronunciation">/ˈʃoʊvɪnɪst/</div>
+                        <button class="audio-button" id="audioButton" title="Play pronunciation">
+                            <svg class="audio-icon" viewBox="0 0 24 24">
+                                <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="part-of-speech">noun</div>
+                </div>
+
+                <div class="instructions">
+                    <strong>Instructions:</strong> Click on any <span class="clickable-word" style="background: rgba(0, 102, 204, 0.1); padding: 2px 4px; border-radius: 3px;">highlighted word</span> in the definition below to see its meaning.
+                </div>
+
+                <div class="definition-section">
+                    <span class="definition-number">1.</span>
+                    <div class="definition-text">
+                        A <span class="clickable-word" data-word="chauvinist">chauvinist</span> is an individual with an <span class="clickable-word" data-word="unreasonable">unreasonable</span>, <span class="clickable-word" data-word="excessive">excessive</span>, or <span class="clickable-word" data-word="blind">blind</span> belief in the superiority of their own specific group—such as their gender, nationality, or race—often accompanied by <span class="clickable-word" data-word="contempt">contempt</span> for others.
+                    </div>
+                </div>
+
+                <div class="footer">
+                    <em>Interactive Dictionary Entry • Click highlighted words for definitions</em>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const definitions = {
+            'chauvinist': {
+                title: 'Chauvinist',
+                definition: 'A person displaying aggressive or exaggerated patriotism and belief in national superiority; also, one who shows prejudiced loyalty or support for their own group, sex, or cause.'
+            },
+            'unreasonable': {
+                title: 'Unreasonable',
+                definition: 'Not guided by or based on good sense; beyond the limits of acceptability or fairness; irrational or illogical.'
+            },
+            'excessive': {
+                title: 'Excessive',
+                definition: 'More than is necessary, normal, or desirable; immoderate or exaggerated in amount or degree.'
+            },
+            'blind': {
+                title: 'Blind',
+                definition: 'In this context: lacking perception, awareness, or judgment; unwilling or unable to perceive or understand; unquestioning.'
+            },
+            'contempt': {
+                title: 'Contempt',
+                definition: 'The feeling that a person or a thing is beneath consideration, worthless, or deserving scorn; intense disrespect or dislike.'
+            }
+        };
+
+        // Text-to-speech pronunciation
+        function speakWord(word) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(word);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.8;
+                utterance.pitch = 1;
+                speechSynthesis.speak(utterance);
+            } else {
+                alert('Text-to-speech is not supported in your browser.');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const book = document.getElementById('book');
+            const bookCover = document.getElementById('bookCover');
+            const bookPages = document.getElementById('bookPages');
+            const bookContainer = document.getElementById('bookContainer');
+            const closeBook = document.getElementById('closeBook');
+            const audioButton = document.getElementById('audioButton');
+            
+            // Book opening functionality
+            book.addEventListener('click', function(e) {
+                if (!bookCover.classList.contains('open')) {
+                    openBook();
+                }
+            });
+
+            closeBook.addEventListener('click', function(e) {
+                e.stopPropagation();
+                closeBookFunc();
+            });
+
+            function openBook() {
+                bookCover.classList.add('open');
+                bookPages.classList.add('visible');
+                bookContainer.classList.add('open');
+            }
+
+            function closeBookFunc() {
+                bookCover.classList.remove('open');
+                bookPages.classList.remove('visible');
+                bookContainer.classList.remove('open');
+                closeAllPopups();
+            }
+
+            // Audio button functionality
+            audioButton.addEventListener('click', function(e) {
+                e.stopPropagation();
+                speakWord('chauvinist');
+            });
+
+            // Clickable words functionality
+            const clickableWords = document.querySelectorAll('.clickable-word');
+            
+            clickableWords.forEach(word => {
+                word.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    
+                    // Close any existing popups
+                    closeAllPopups();
+                    
+                    const wordKey = this.getAttribute('data-word');
+                    const wordData = definitions[wordKey];
+                    
+                    if (wordData) {
+                        const popup = createPopup(wordData);
+                        document.body.appendChild(popup);
+                        
+                        // Position popup near the clicked word
+                        const rect = this.getBoundingClientRect();
+                        popup.style.left = rect.left + 'px';
+                        popup.style.top = (rect.bottom + window.scrollY + 5) + 'px';
+                        
+                        // Adjust position if popup goes off screen
+                        setTimeout(() => {
+                            const popupRect = popup.getBoundingClientRect();
+                            if (popupRect.right > window.innerWidth) {
+                                popup.style.left = (window.innerWidth - popupRect.width - 10) + 'px';
+                            }
+                            if (popupRect.bottom > window.innerHeight) {
+                                popup.style.top = (rect.top + window.scrollY - popupRect.height - 5) + 'px';
+                            }
+                        }, 10);
+                        
+                        popup.style.display = 'block';
+                        
+                        // Speak the word when popup opens
+                        speakWord(wordKey);
+                    }
+                });
+            });
+
+            // Close popups when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.clickable-word') && !e.target.closest('.definition-popup')) {
+                    closeAllPopups();
+                }
+            });
+        });
+
+        function createPopup(wordData) {
+            const popup = document.createElement('div');
+            popup.className = 'definition-popup';
+            popup.innerHTML = `
+                <span class="close-popup" onclick="this.parentElement.remove()">×</span>
+                <div class="popup-title">${wordData.title}</div>
+                <div class="popup-definition">${wordData.definition}</div>
+            `;
+            return popup;
+        }
+
+        function closeAllPopups() {
+            const popups = document.querySelectorAll('.definition-popup');
+            popups.forEach(popup => popup.remove());
+        }
+    </script>
+</body>
+</html>
