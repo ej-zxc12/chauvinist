@@ -14,13 +14,15 @@
         body {
             font-family: 'Georgia', 'Times New Roman', serif;
             background: linear-gradient(135deg, #2c1810 0%, #4a2c1a 100%);
-            min-height: 100vh;
-            padding: 20px;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
             line-height: 1.6;
             display: flex;
             justify-content: center;
             align-items: center;
             perspective: 2000px;
+            overflow: hidden;
         }
 
         .book-container {
@@ -34,8 +36,10 @@
         }
 
         .book {
-            width: 600px;
-            height: 400px;
+            width: 80vw;
+            height: 80vh;
+            max-width: 900px;
+            max-height: 600px;
             position: relative;
             transform-style: preserve-3d;
             transition: transform 1s ease;
@@ -94,12 +98,13 @@
             border: 2px solid #8b7355;
             border-radius: 8px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            padding: 40px;
+            padding: 30px;
             transform: rotateY(0deg);
             backface-visibility: hidden;
             overflow-y: auto;
             opacity: 0;
             transition: opacity 0.5s ease 0.5s;
+            z-index: 1;
         }
 
         .book-pages.visible {
@@ -275,12 +280,38 @@
         }
 
         .footer {
-            margin-top: 40px;
+            margin-top: 30px;
             padding-top: 20px;
             border-top: 1px solid #d4af37;
             text-align: center;
             color: #666;
             font-size: 0.9em;
+        }
+
+        .group-section {
+            margin-bottom: 20px;
+        }
+
+        .group-section h3 {
+            color: #8b7355;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+
+        .group-members {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .member {
+            background: rgba(212, 175, 55, 0.1);
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            color: #666;
+            text-align: center;
         }
 
         .instructions {
@@ -347,6 +378,18 @@
                 </div>
 
                 <div class="footer">
+                    <div class="group-section">
+                        <h3>Project Contributors:</h3>
+                        <div class="group-members">
+                            <div class="member">Bechayda, Jhenz Yuan</div>
+                            <div class="member">Maminta, Kent</div>
+                            <div class="member">Bechayda, Ehralyn</div>
+                            <div class="member">Calaguas, Andreia</div>
+                            <div class="member">Dichos, Tyrah</div>
+                            <div class="member">Halili, Jade</div>
+                            <div class="member">Polizon, Jilliane C.</div>
+                        </div>
+                    </div>
                     <em>Interactive Dictionary Entry • Click highlighted words for definitions</em>
                 </div>
             </div>
@@ -496,3 +539,4 @@
     </script>
 </body>
 </html>
+
